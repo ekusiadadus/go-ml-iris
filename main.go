@@ -5,8 +5,10 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"math/rand"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/goml/gobrain"
 	"github.com/goml/gobrain/persist"
@@ -41,13 +43,25 @@ func loadData() ([][]float64, []string, error) {
 	return resultf, results, nil
 }
 
+func shuffle(x [][]float64, y []string) {
+	for i := len(x) - 1; i >= 0; i-- {
+		j := rand.Intn(i + 1)
+		x[i], x[j] = x[j], x[i]
+		y[i], y[j] = y[j], y[i]
+	}
+}
+
 func main() {
+	rand.Seed(time.Now().Unix())
 	X, Y, err := loadData()
 	if err != nil {
 		log.Fatal(err)
 	}
-	_ = X
-	_ = Y
+
+	shuffle(X, Y)
+
+	n := 100
+	xtrain, ytrain, xtest, ytest := X[:n], Y[:n], X[n:], Y[n:]
 
 	patterns := [][][]float64{}
 
@@ -57,9 +71,9 @@ func main() {
 		"Virginica":  {0, 0, 1},
 	}
 
-	for i, x := range X {
+	for i, x := range xtrain {
 		patterns = append(patterns, [][]float64{
-			x, m[Y[i]],
+			x, m[ytrain[i]],
 		})
 	}
 
@@ -74,7 +88,7 @@ func main() {
 	}
 
 	var a int
-	for i, x := range X {
+	for i, x := range xtest {
 		result := ff.Update(x)
 
 		var mf float64
@@ -86,11 +100,11 @@ func main() {
 				mj = i
 			}
 		}
-		want := Y[i]
+		want := ytest[i]
 		got := []string{"Setosa", "Versicolor", "Virginica"}[mj]
 		if want == got {
 			a++
 		}
 	}
-	fmt.Printf("%.02f%%\n", float64(a)/float64(len(X))*100)
+	fmt.Printf("%.02f%%\n", float64(a)/float64(len(xtest))*100)
 }
