@@ -21,3 +21,4 @@
 go.work
 *.swp
 go-ml-iris
+model.json

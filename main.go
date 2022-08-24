@@ -73,16 +73,24 @@ func main() {
 		persist.Save("model.json", &ff)
 	}
 
-	result := ff.Update(X[0])
+	var a int
+	for i, x := range X {
+		result := ff.Update(x)
 
-	var mf float64
-	var mi int
+		var mf float64
+		var mj int
 
-	for i, v := range result {
-		if mf < v {
-			mf = v
-			mi = i
+		for i, v := range result {
+			if mf < v {
+				mf = v
+				mj = i
+			}
+		}
+		want := Y[i]
+		got := []string{"Setosa", "Versicolor", "Virginica"}[mj]
+		if want == got {
+			a++
 		}
 	}
-	fmt.Println([]string{"Setosa", "Versicolor", "Virginica"}[mi])
+	fmt.Printf("%.02f%%\n", float64(a)/float64(len(X))*100)
 }
