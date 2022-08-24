@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/goml/gobrain"
+	"github.com/goml/gobrain/persist"
 )
 
 func loadData() ([][]float64, []string, error) {
@@ -64,9 +65,24 @@ func main() {
 
 	ff := &gobrain.FeedForward{}
 	ff.Init(4, 3, 3)
-	ff.Train(patterns, 100000, 0.6, 0.4, true)
+
+	err = persist.Load("model.json", &ff)
+
+	if err != nil {
+		ff.Train(patterns, 100000, 0.6, 0.04, true)
+		persist.Save("model.json", &ff)
+	}
 
 	result := ff.Update(X[0])
 
-	fmt.Println(result)
+	var mf float64
+	var mi int
+
+	for i, v := range result {
+		if mf < v {
+			mf = v
+			mi = i
+		}
+	}
+	fmt.Println([]string{"Setosa", "Versicolor", "Virginica"}[mi])
 }
